@@ -6,6 +6,7 @@ from nemoguardrails.kb.kb import KnowledgeBase
 from llama_index.core import Settings, SimpleDirectoryReader, VectorStoreIndex, StorageContext
 from llama_index.vector_stores.milvus import MilvusVectorStore
 from llama_index.core.node_parser import SentenceSplitter
+from llama_index.llms.nvidia import NVIDIA
 import os
 import asyncio
 import shutil
