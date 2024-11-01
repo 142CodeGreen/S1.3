@@ -1,7 +1,7 @@
 from nemoguardrails.actions import action
 from nemoguardrails.actions.actions import ActionResult
 from nemoguardrails import LLMRails, RailsConfig
-from nemoguardrails.kb.kb import KnowledgeBase
+#from nemoguardrails.kb.kb import KnowledgeBase
 
 from llama_index.core import Settings, SimpleDirectoryReader, VectorStoreIndex, StorageContext
 from llama_index.vector_stores.milvus import MilvusVectorStore
@@ -59,7 +59,7 @@ def template(question, context):
     Answer in markdown:"""
 
 @action(is_system_action=True)
-async def rag(context: dict, llm, kb: KnowledgeBase) -> ActionResult:
+async def rag(context: dict, llm, kb) -> ActionResult:
     global index
     
     try:
@@ -69,13 +69,13 @@ async def rag(context: dict, llm, kb: KnowledgeBase) -> ActionResult:
         
         # Create the index if it hasn't been created yet
         if index is None:
-            vector_store = MilvusVectorStore(
-                host="127.0.0.1",
-                port=19530,
-                dim=1024,
-                collection_name="your_collection_name",
-                gpu_id=0
-            )
+            #vector_store = MilvusVectorStore(
+            #    host="127.0.0.1",
+            #    port=19530,
+            #    dim=1024,
+            #    collection_name="your_collection_name",
+            #    gpu_id=0
+            #)
 
             #vector_store = MilvusVectorStore(uri="./milvus_demo.db", dim=1024, overwrite=True, output_fields=[])
             storage_context = StorageContext.from_defaults(vector_store=vector_store)
