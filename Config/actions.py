@@ -36,7 +36,7 @@ def load_documents(file_objs):
         if not file_objs:
             return "Error: No files selected."
 
-        kb_dir = "./Config/kb"  # Create the 'kb' directory if it doesn't exist
+        kb_dir = "./Config/kb"
         if not os.path.exists(kb_dir):
             os.makedirs(kb_dir)
 
@@ -47,9 +47,10 @@ def load_documents(file_objs):
             shutil.copy2(file_path, kb_dir)
 
         if not documents:
-            return f"No documents found in the selected files.", gr.update(interactive=False)
+            return "No documents found in the selected files."
 
-        # use GPU for Milvus workload
+        # Initialize Milvus Vector Store
+          # use GPU for Milvus workload
         #vector_store = MilvusVectorStore(
         #    host="127.0.0.1",
         #    port=19530,
@@ -57,20 +58,26 @@ def load_documents(file_objs):
         #    collection_name="your_collection_name",
         #    gpu_id=0
         #)  
-            #output_fields=["field1","field2"]
-
-        
         vector_store = MilvusVectorStore(uri="./milvus_demo.db", dim=1024, overwrite=True, output_fields=[])
-        storage_context = StorageContext.from_defaults(vector_store=vector_store)
-        index = VectorStoreIndex.from_documents(documents, storage_context=storage_context)
-        #index.storage_context.persist(persist_dir='./Config/kb/')   # to add sequence for rag
         
-        query_engine = index.as_query_engine(similarity_top_k=20, streaming=True)
+        # Vectorize documents
+        embeddings = [Settings.embed_model.get_text_embedding(doc.text) for doc in documents]
+        
+        # Insert vectors into Milvus
+        for doc, embedding in zip(documents, embeddings):
+            vector_store.insert([embedding], doc.metadata)
 
-        return f"Successfully loaded documents from {kb_dir}."
+        # Create index if it doesn't exist
+        if not index:
+            index = VectorStoreIndex.from_documents(documents, storage_context=StorageContext.from_defaults(vector_store=vector_store))
+            query_engine = index.as_query_engine(similarity_top_k=20, streaming=True)
+
+        return f"Successfully loaded documents into Milvus."
     except Exception as e:
-        return f"Error loading documents: {str(e)}" # gr.update(interactive=False)
-
+        logger.error(f"Error loading documents: {str(e)}")
+        return f"Error loading documents: {str(e)}"
+        
+   
 def template(question, context):
     return f"""Answer user questions based on loaded documents. 
     
@@ -91,10 +98,16 @@ async def rag(context: dict, llm, kb) -> ActionResult:
         if not message:
             return ActionResult(return_value="No user query provided.", context_updates={})
         
-        response = await query_engine.aquery(message)
-        relevant_chunks = "\n".join([node.text for node in response.source_nodes])
+        # Vectorize query
+        query_embedding = Settings.embed_model.get_text_embedding(message)
+        
+        # Search for similar vectors in Milvus
+        results = vector_store.search(query_embedding, limit=20)  # Assuming similarity_top_k=20
+        relevant_chunks = [vector_store.get_document(result.id) for result in results]
+        
+        context_text = "\n".join([chunk.text for chunk in relevant_chunks])
 
-        prompt = template(message, relevant_chunks)
+        prompt = template(message, context_text)
         answer = await llm.generate_async(prompt)
         
         context_updates = {
@@ -106,6 +119,6 @@ async def rag(context: dict, llm, kb) -> ActionResult:
     except Exception as e:
         logger.error(f"Error in RAG process: {str(e)}")
         return ActionResult(return_value=f"An error occurred while processing your query.", context_updates={})
-
+        
 def init(app: LLMRails):
     app.register_action(rag, "rag")
