@@ -46,9 +46,6 @@ def load_documents(file_objs):
             documents.extend(SimpleDirectoryReader(input_files=[file_path]).load_data())
             shutil.copy2(file_path, kb_dir)
 
-        if not documents:
-            return "No documents found in the selected files."
-
         # Initialize Milvus Vector Store
           # use GPU for Milvus workload
         #vector_store = MilvusVectorStore(
@@ -61,7 +58,8 @@ def load_documents(file_objs):
         vector_store = MilvusVectorStore(uri="./milvus_demo.db", dim=1024, overwrite=True, output_fields=[])
         
         # Vectorize documents
-        embeddings = [Settings.embed_model.get_text_embedding(doc.text) for doc in documents]
+        # Assuming there's a method to get text embedding
+        embeddings = [get_text_embedding(doc.text) for doc in documents]
         
         # Insert vectors into Milvus
         for doc, embedding in zip(documents, embeddings):
@@ -72,11 +70,11 @@ def load_documents(file_objs):
             index = VectorStoreIndex.from_documents(documents, storage_context=StorageContext.from_defaults(vector_store=vector_store))
             query_engine = index.as_query_engine(similarity_top_k=20, streaming=True)
 
-        return ActionResult(return_value="Successfully loaded documents into Milvus.", context_updates={})
+        return "Successfully loaded documents into Milvus."
+
     except Exception as e:
-        logger.error(f"Error loading documents: {str(e)}")
-        return ActionResult(return_value=f"Error loading documents: {str(e)}", context_updates={})
-        
+        return f"Error loading documents: {str(e)}"
+
    
 def template(question, context):
     return f"""Answer user questions based on loaded documents. 
