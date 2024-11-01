@@ -86,40 +86,42 @@ def load_documents(file_objs):
     except Exception as e:
         return f"Error loading documents: {str(e)}"
 
-# Function to handle chat interactions with NeMo Guardrails
 async def chat(message, history):
     global query_engine
     if query_engine is None:
         return history + [("Please upload a file first.", None)]
     
     try:
-        # Here we would integrate with NeMo Guardrails
         response = await rails.generate_async(
-            prompt=message, 
-            context={"user_input": message}  # Add any context needed for guardrails
+            messages=[{"role": "user", "content": message}]
         )
-        response_text = response
-        return history + [(message, response_text)]
+        return history + [(message, response)]
     except Exception as e:
         return history + [(message, f"Error processing query: {str(e)}")]
 
-# Function to stream responses
-async def stream_response(message, history):
+async def query_guardrails(prompt):
+    try:
+        response = await rails.generate_async(
+            messages=[{"role": "user", "content": prompt}]
+        )
+        return response
+    except Exception as e:
+        return f"Error processing query: {str(e)}"
+
+def stream_response(message, history):
     global query_engine
     if query_engine is None:
         yield history + [("Please upload a file first.", None)]
         return
 
     try:
-        # Generate response through NeMo Guardrails
-        response = await rails.generate_async(
-            prompt=message, 
-            context={"user_input": message}
-        )
-        yield history + [(message, response)]
+        # Use asyncio.run to execute the async function in a synchronous context
+        response = asyncio.run(query_guardrails(message))
+        for text in response.split():  # Adjust streaming as needed
+            history.append((message, text))
+            yield history
     except Exception as e:
         yield history + [(message, f"Error processing query: {str(e)}")]
-        
 
 # Create the Gradio interface
 with gr.Blocks() as demo:
