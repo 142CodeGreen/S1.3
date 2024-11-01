@@ -1,0 +1,14 @@
+llama-index-core==0.10.58
+llama-index-readers-file==0.1.30
+llama-index-llms-nvidia==0.1.4
+llama-index-embeddings-nvidia==0.1.4
+#llama-index-postprocessor-nvidia-rerank
+llama-index-vector-stores-Milvus==0.1.20
+ipywidgets
+gradio
+nemoguardrails
+OpenAI
+#langchain
+langchain-nvidia-ai-endpoints
+transformers>=4.10
+torch  # Assuming you're using PyTorch for GPU acceleration
