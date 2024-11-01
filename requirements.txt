@@ -10,5 +10,5 @@ nemoguardrails
 OpenAI
 #langchain
 langchain-nvidia-ai-endpoints
-transformers>=4.10
-torch  # Assuming you're using PyTorch for GPU acceleration
+#transformers>=4.10
+#torch  # Assuming you're using PyTorch for GPU acceleration
