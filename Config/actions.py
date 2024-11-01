@@ -44,7 +44,7 @@ def load_documents(file_objs):
     
     if not file_paths:
         return "No files selected."
-    return f"Successfully loaded {len(documents)} documents from {len(file_paths)} files."
+    return f"Successfully loaded documents from {kb_dir}."
 
 def template(question, context):
     return f"""Answer user questions based on loaded documents. 
