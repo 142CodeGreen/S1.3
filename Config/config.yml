@@ -34,7 +34,7 @@ rails:
   input:
     flows:
       - self check input
-      - execute rag
+      - execute rag()
 
   # Output rails are triggered after a bot message has been generated.
   output:
