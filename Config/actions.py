@@ -7,6 +7,7 @@ from llama_index.core import Settings, SimpleDirectoryReader, VectorStoreIndex, 
 from llama_index.vector_stores.milvus import MilvusVectorStore
 from llama_index.core.node_parser import SentenceSplitter
 from llama_index.llms.nvidia import NVIDIA
+from llama_index.embeddings.nvidia import NVIDIAEmbedding
 import os
 import asyncio
 import shutil
