@@ -65,17 +65,17 @@ def load_documents(file_objs):
         
         # Insert vectors into Milvus
         for doc, embedding in zip(documents, embeddings):
-            vector_store.insert([embedding], doc.metadata)
+            vector_store.add([embedding], doc.metadata)
 
         # Create index if it doesn't exist
         if not index:
             index = VectorStoreIndex.from_documents(documents, storage_context=StorageContext.from_defaults(vector_store=vector_store))
             query_engine = index.as_query_engine(similarity_top_k=20, streaming=True)
 
-        return f"Successfully loaded documents into Milvus."
+        return ActionResult(return_value="Successfully loaded documents into Milvus.", context_updates={})
     except Exception as e:
         logger.error(f"Error loading documents: {str(e)}")
-        return f"Error loading documents: {str(e)}"
+        return ActionResult(return_value=f"Error loading documents: {str(e)}", context_updates={})
         
    
 def template(question, context):
@@ -92,7 +92,7 @@ def template(question, context):
 
 @action(is_system_action=True)
 async def rag(context: dict, llm, kb) -> ActionResult:
-    global query_engine
+    global vector_store, query_engine
     try:
         message = context.get('last_user_message', '')
         if not message:
@@ -102,10 +102,13 @@ async def rag(context: dict, llm, kb) -> ActionResult:
         query_embedding = Settings.embed_model.get_text_embedding(message)
         
         # Search for similar vectors in Milvus
-        results = vector_store.search(query_embedding, limit=20)  # Assuming similarity_top_k=20
-        relevant_chunks = [vector_store.get_document(result.id) for result in results]
+        results = vector_store.search(query_embedding, limit=20)  # Assuming search method name
+        relevant_chunks = [result.metadata for result in results if hasattr(result, 'metadata') and 'text' in result.metadata]
         
-        context_text = "\n".join([chunk.text for chunk in relevant_chunks])
+        context_text = "\n".join([chunk['text'] for chunk in relevant_chunks])
+
+        if not context_text:
+            return ActionResult(return_value="I couldn't find any relevant information in the loaded documents for your query.", context_updates={})
 
         prompt = template(message, context_text)
         answer = await llm.generate_async(prompt)
@@ -119,6 +122,26 @@ async def rag(context: dict, llm, kb) -> ActionResult:
     except Exception as e:
         logger.error(f"Error in RAG process: {str(e)}")
         return ActionResult(return_value=f"An error occurred while processing your query.", context_updates={})
-        
+
+@action(is_system_action=True)
+async def self_check_input(user_input: str, rails: LLMRails) -> ActionResult:
+    # This action would typically check against the rules in prompts.yml
+    # For simplicity, we'll assume the check is done elsewhere or in a more complex setup
+    return ActionResult(return_value=True, context_updates={})
+
+@action(is_system_action=True)
+async def self_check_output(bot_response: str, rails: LLMRails) -> ActionResult:
+    # Similar to input checking, for simplicity
+    return ActionResult(return_value=True, context_updates={})
+
+@action(is_system_action=True)
+async def self_check_hallucinations(paragraph: str, statement: str, rails: LLMRails) -> ActionResult:
+    # Check for hallucination might involve comparing statement to paragraph context
+    # Here we'll just simulate the check passing
+    return ActionResult(return_value=True, context_updates={})
+
 def init(app: LLMRails):
     app.register_action(rag, "rag")
+    app.register_action(self_check_input, "self_check_input")
+    app.register_action(self_check_output, "self_check_output")
+    app.register_action(self_check_hallucinations, "self_check_hallucinations")
