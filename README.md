@@ -1,3 +1,14 @@
+---
+title: S1.3
+emoji: ⚡
+colorFrom: gray
+colorTo: green
+sdk: gradio
+sdk_version: 5.4.0
+app_file: app.py
+pinned: false
+---
+
 # S1.3
 
 ## Setup
