@@ -44,7 +44,7 @@ def load_documents(file_objs):
     
     if not file_paths:
         return "No files selected."
-    return f"Documents loaded into {kb_dir}."
+    return f"No documents found in the selected files.", gr.update(interactive=False)
 
 def template(question, context):
     return f"""Answer user questions based on loaded documents. 
@@ -61,7 +61,6 @@ def template(question, context):
 @action(is_system_action=True)
 async def rag(context: dict, llm, kb) -> ActionResult:
     global index
-    
     try:
         message = context.get('last_user_message', '')
         if not message:
@@ -77,7 +76,7 @@ async def rag(context: dict, llm, kb) -> ActionResult:
             #    gpu_id=0
             #)
 
-            #vector_store = MilvusVectorStore(uri="./milvus_demo.db", dim=1024, overwrite=True, output_fields=[])
+            vector_store = MilvusVectorStore(uri="./milvus_demo.db", dim=1024, overwrite=True, output_fields=[])
             storage_context = StorageContext.from_defaults(vector_store=vector_store)
             documents = SimpleDirectoryReader(input_dir="./Config/kb").load_data()
             index = VectorStoreIndex.from_documents(documents, storage_context=storage_context)
