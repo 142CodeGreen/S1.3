@@ -30,21 +30,45 @@ def get_files_from_input(file_objs):
     return [file_obj.name for file_obj in file_objs]
 
 def load_documents(file_objs):
-    kb_dir = "./Config/kb"
-    if not os.path.exists(kb_dir):
-        os.makedirs(kb_dir)
-    
-    file_paths = get_files_from_input(file_objs)
-    for file_path in file_paths:
-        try:
+    global index, query_engine
+    try:
+        if not file_objs:
+            return "Error: No files selected."
+
+        kb_dir = "./Config/kb"  # Create the 'kb' directory if it doesn't exist
+        if not os.path.exists(kb_dir):
+            os.makedirs(kb_dir)
+
+        file_paths = get_files_from_input(file_objs)
+        documents = []
+        for file_path in file_paths:
+            documents.extend(SimpleDirectoryReader(input_files=[file_path]).load_data())
             shutil.copy2(file_path, kb_dir)
-            logger.info(f"File copied: {file_path}")
-        except Exception as e:
-            logger.error(f"Failed to copy {file_path}: {str(e)}")
-    
-    if not file_paths:
-        return "No files selected."
-    return f"Successfully loaded documents from {kb_dir}."
+
+        if not documents:
+            return f"No documents found in the selected files.", gr.update(interactive=False)
+
+        # use GPU for Milvus workload
+        #vector_store = MilvusVectorStore(
+        #    host="127.0.0.1",
+        #    port=19530,
+        #    dim=1024,
+        #    collection_name="your_collection_name",
+        #    gpu_id=0
+        #)  
+            #output_fields=["field1","field2"]
+
+        
+        vector_store = MilvusVectorStore(uri="./milvus_demo.db", dim=1024, overwrite=True, output_fields=[])
+        storage_context = StorageContext.from_defaults(vector_store=vector_store)
+        index = VectorStoreIndex.from_documents(documents, storage_context=storage_context)
+        #index.storage_context.persist(persist_dir='./Config/kb/')   # to add sequence for rag
+        
+        query_engine = index.as_query_engine(similarity_top_k=20, streaming=True)
+
+        return f"Successfully loaded documents from {kb_dir}."
+    except Exception as e:
+        return f"Error loading documents: {str(e)}" # gr.update(interactive=False)
 
 def template(question, context):
     return f"""Answer user questions based on loaded documents. 
@@ -60,29 +84,12 @@ def template(question, context):
 
 @action(is_system_action=True)
 async def rag(context: dict, llm, kb) -> ActionResult:
-    global index
+    global query_engine
     try:
         message = context.get('last_user_message', '')
         if not message:
             return ActionResult(return_value="No user query provided.", context_updates={})
         
-        # Create the index if it hasn't been created yet
-        if index is None:
-            #vector_store = MilvusVectorStore(
-            #    host="127.0.0.1",
-            #    port=19530,
-            #    dim=1024,
-            #    collection_name="your_collection_name",
-            #    gpu_id=0
-            #)
-
-            vector_store = MilvusVectorStore(uri="./milvus_demo.db", dim=1024, overwrite=True, output_fields=[])
-            storage_context = StorageContext.from_defaults(vector_store=vector_store)
-            documents = SimpleDirectoryReader(input_dir="./Config/kb").load_data()
-            index = VectorStoreIndex.from_documents(documents, storage_context=storage_context)
-            logger.info("Index created.")
-        
-        query_engine = index.as_query_engine(similarity_top_k=20, streaming=True)
         response = await query_engine.aquery(message)
         relevant_chunks = "\n".join([node.text for node in response.source_nodes])
 
