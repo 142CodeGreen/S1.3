@@ -4,8 +4,8 @@
 
 1. Clone the repository:
 ```
-git clone https://github.com/142CodeGreen/RAG-with-NeMo-Guardrails.git
-cd RAG-with-NeMo-Guardrails
+git clone https://github.com/142CodeGreen/S1.3.git
+cd S1.3
 ```
 
 2. Install the required packages:
