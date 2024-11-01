@@ -1,7 +1,7 @@
 import warnings
 warnings.filterwarnings("ignore", category=UserWarning, module="llama_index")
 
-#import torch
+import torch
 import os
 import gradio as gr
 #import logging
@@ -55,14 +55,15 @@ def load_documents(file_objs):
         if not documents:
             return f"No documents found in the selected files."
 
-        vector_store = MilvusVectorStore(
-            host="127.0.0.1",
-            port=19530,
-            dim=1024,
-            collection_name="your_collection_name",
-            gpu_id=0
-        )
-        
+        #vector_store = MilvusVectorStore(
+        #    host="127.0.0.1",
+        #    port=19530,
+        #    dim=1024,
+        #    collection_name="your_collection_name",
+        #    gpu_id=0
+        #)
+
+        vector_store = MilvusVectorStore(uri="./milvus_demo.db", dim=1024, overwrite=True, output_fields=[])
         storage_context = StorageContext.from_defaults(vector_store=vector_store)
         index = VectorStoreIndex.from_documents(documents, storage_context=storage_context)
         query_engine = index.as_query_engine(similarity_top_k=20, streaming=True)
