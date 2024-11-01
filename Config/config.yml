@@ -25,9 +25,9 @@ sample_conversation: |
   bot express appreciation and offer additional help
     "You're welcome. If you have any more questions or if there's anything else I can help you with, please don't hesitate to ask."
 
-#knowledge_base:
-#  type: kb_folder
-#  path: ./Config/kb
+knowledge_base:
+  type: kb_folder
+  path: ./Config/kb
 
 rails:
   # Input rails are invoked when new input from the user is received.
