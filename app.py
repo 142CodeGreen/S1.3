@@ -4,7 +4,7 @@ warnings.filterwarnings("ignore", category=UserWarning, module="llama_index")
 import torch
 import os
 import gradio as gr
-#import logging
+import logging
 from nemoguardrails import LLMRails, RailsConfig
 import asyncio
 
@@ -67,6 +67,20 @@ def load_documents(file_objs):
         storage_context = StorageContext.from_defaults(vector_store=vector_store)
         index = VectorStoreIndex.from_documents(documents, storage_context=storage_context)
         query_engine = index.as_query_engine(similarity_top_k=20, streaming=True)
+
+        # Test query_engine synchronously to avoid mixing async with sync
+        def test_query_engine():
+            if query_engine:
+                try:
+                    response = query_engine.query("Test Query")
+                    logger.info(f"Test query response: {response.response}")
+                except Exception as e:
+                    logger.error(f"Query engine failed with error: {str(e)}")
+            else:
+                logger.error("Query engine is not initialized")
+        
+        # Run the test in the same synchronous context
+        test_query_engine()
 
         return f"Successfully loaded {len(documents)} documents from {len(file_paths)} files."
     except Exception as e:
