@@ -23,6 +23,7 @@ Settings.text_splitter = SentenceSplitter(chunk_size=400)
 
 # Global variable to hold our index
 index = None
+query_engine = None
 
 def get_files_from_input(file_objs):
     if not file_objs:
