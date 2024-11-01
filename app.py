@@ -21,7 +21,7 @@ from llama_index.vector_stores.milvus import MilvusVectorStore
 from llama_index.core.node_parser import SentenceSplitter
 Settings.text_splitter = SentenceSplitter(chunk_size=400)
 
-from nemo_guardrails import LLMRails, RailsConfig
+from nemoguardrails import LLMRails, RailsConfig
 
 # Ensure GPU usage
 if torch.cuda.is_available():
