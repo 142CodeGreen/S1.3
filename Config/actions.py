@@ -69,15 +69,15 @@ async def rag(context: dict, llm, kb: KnowledgeBase) -> ActionResult:
         
         # Create the index if it hasn't been created yet
         if index is None:
-            #vector_store = MilvusVectorStore(
-            #    host="127.0.0.1",
-            #    port=19530,
-            #    dim=1024,
-            #    collection_name="your_collection_name",
-            #    gpu_id=0
-            #)
+            vector_store = MilvusVectorStore(
+                host="127.0.0.1",
+                port=19530,
+                dim=1024,
+                collection_name="your_collection_name",
+                gpu_id=0
+            )
 
-            vector_store = MilvusVectorStore(uri="./milvus_demo.db", dim=1024, overwrite=True, output_fields=[])
+            #vector_store = MilvusVectorStore(uri="./milvus_demo.db", dim=1024, overwrite=True, output_fields=[])
             storage_context = StorageContext.from_defaults(vector_store=vector_store)
             documents = SimpleDirectoryReader(input_dir="./Config/kb").load_data()
             index = VectorStoreIndex.from_documents(documents, storage_context=storage_context)
