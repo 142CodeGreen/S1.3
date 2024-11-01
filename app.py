@@ -32,6 +32,7 @@ async def stream_response(message, history):
             partial_response += token + " "
             yield history + [(message, partial_response)]
     except Exception as e:
+        logging.error(f"An error occurred in stream_response: {e}")
         yield history + [(message, f"Error processing query: {str(e)}")]
 
 
