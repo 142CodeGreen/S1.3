@@ -1,7 +1,7 @@
 import warnings
 warnings.filterwarnings("ignore", category=UserWarning, module="llama_index")
 
-import torch
+#import torch
 import os
 import logging
 
