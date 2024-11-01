@@ -10,6 +10,12 @@ import asyncio
 from Config.actions import load_documents, init
 from nemoguardrails import LLMRails, RailsConfig
 
+if torch.cuda.is_available():
+    print(f"CUDA is available, GPU being used: {torch.cuda.get_device_name(0)}")
+    print(f"Total CUDA memory: {torch.cuda.get_device_properties(0).total_memory / 1e9} GB")
+else:
+    print("CUDA is not available. Make sure you have a GPU with CUDA installed.")
+
 # Initialize NeMo Guardrails
 config = RailsConfig.from_path("./Config")
 rails = LLMRails(config)
