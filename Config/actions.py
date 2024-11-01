@@ -1,4 +1,8 @@
-from nemoguardrails import LLMRails, RailsConfig, Action, ActionResult
+from nemoguardrails.actions import action
+from nemoguardrails.actions.actions import ActionResult
+from nemoguardrails import LLMRails, RailsConfig
+from nemoguardrails.kb.kb import KnowledgeBase
+
 from llama_index.core import Settings, SimpleDirectoryReader, VectorStoreIndex, StorageContext
 from llama_index.vector_stores.milvus import MilvusVectorStore
 from llama_index.core.node_parser import SentenceSplitter
