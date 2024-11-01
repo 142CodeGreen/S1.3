@@ -123,25 +123,25 @@ async def rag(context: dict, llm, kb) -> ActionResult:
         logger.error(f"Error in RAG process: {str(e)}")
         return ActionResult(return_value=f"An error occurred while processing your query.", context_updates={})
 
-@action(is_system_action=True)
-async def self_check_input(user_input: str, rails: LLMRails) -> ActionResult:
+#@action(is_system_action=True)
+#async def self_check_input(user_input: str, rails: LLMRails) -> ActionResult:
     # This action would typically check against the rules in prompts.yml
     # For simplicity, we'll assume the check is done elsewhere or in a more complex setup
-    return ActionResult(return_value=True, context_updates={})
+#    return ActionResult(return_value=True, context_updates={})
 
-@action(is_system_action=True)
-async def self_check_output(bot_response: str, rails: LLMRails) -> ActionResult:
+#@action(is_system_action=True)
+#async def self_check_output(bot_response: str, rails: LLMRails) -> ActionResult:
     # Similar to input checking, for simplicity
-    return ActionResult(return_value=True, context_updates={})
+#    return ActionResult(return_value=True, context_updates={})
 
-@action(is_system_action=True)
-async def self_check_hallucinations(paragraph: str, statement: str, rails: LLMRails) -> ActionResult:
+#@action(is_system_action=True)
+#async def self_check_hallucinations(paragraph: str, statement: str, rails: LLMRails) -> ActionResult:
     # Check for hallucination might involve comparing statement to paragraph context
     # Here we'll just simulate the check passing
-    return ActionResult(return_value=True, context_updates={})
+#    return ActionResult(return_value=True, context_updates={})
 
 def init(app: LLMRails):
     app.register_action(rag, "rag")
-    app.register_action(self_check_input, "self_check_input")
-    app.register_action(self_check_output, "self_check_output")
-    app.register_action(self_check_hallucinations, "self_check_hallucinations")
+ #   app.register_action(self_check_input, "self_check_input")
+ #   app.register_action(self_check_output, "self_check_output")
+ #   app.register_action(self_check_hallucinations, "self_check_hallucinations")
