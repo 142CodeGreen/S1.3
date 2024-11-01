@@ -132,8 +132,9 @@ async def stream_response_async(message, history):
         yield history + [(message, f"Error processing query: {str(e)}")]
 
 # Synchronous wrapper for stream_response_async
-def stream_response(message, history):
-    return asyncio.run(stream_response_async(message, history))
+async def stream_response(message, history):
+    async for response_part in stream_response_async(message, history):
+        yield response_part
 
 # Create the Gradio interface
 with gr.Blocks() as demo:
