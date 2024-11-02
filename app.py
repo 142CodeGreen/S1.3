@@ -3,11 +3,39 @@ warnings.filterwarnings("ignore", category=UserWarning, module="llama_index")
 
 import torch
 import os
+import gradio as gr
+from rag_pipeline import init
+from nemoguardrails import RailsConfig, LLMRails
+from llama_index.core import Settings
+from llama_index.embeddings.nvidia import NVIDIAEmbedding
+from llama_index.llms.nvidia import NVIDIA
+from Config.doc_loader import load_documents
+import asyncio
 import logging
 
-import gradio as gr
-import asyncio
-from rag_pipeline import initialize_rag
+Settings.llm = NVIDIA(model="meta/llama-3.1-8b-instruct")
+Settings.embed_model = NVIDIAEmbedding(model="NV-Embed-QA", truncate="END")
+
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
+
+async def setup_app():
+    global rails, query_engine
+    try:
+        # Load documents
+        index = await load_documents(get_file_objects_from_somewhere())  # Placeholder for document loading
+        query_engine = index.as_query_engine(similarity_top_k=20, streaming=True)
+        
+        # Initialize Guardrails
+        config = RailsConfig.from_path("./Config")
+        rails = LLMRails(config)
+        init(rails)  # This should now initialize the RAG action
+        
+        logger.info("RAG system and Guardrails initialized successfully.")
+    except Exception as e:
+        logger.error(f"Failed to initialize RAG system or Guardrails: {str(e)}")
+        raise  # Re-raise the exception to stop the app from starting if initialization fails
+
 
 if torch.cuda.is_available():
     print(f"CUDA is available, GPU being used: {torch.cuda.get_device_name(0)}")
