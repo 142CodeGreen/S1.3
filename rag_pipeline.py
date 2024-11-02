@@ -2,7 +2,7 @@ from nemoguardrails import LLMRails, ActionResult
 from llama_index.core import Settings
 from llama_index.embeddings.nvidia import NVIDIAEmbedding
 from llama_index.llms.nvidia import NVIDIA
-from ..document_loader import load_documents
+from ..doc_loader import load_documents
 import logging
 
 logger = logging.getLogger(__name__)
@@ -43,24 +43,9 @@ async def rag(context: dict, llm, kb, query_engine):
         return ActionResult(return_value="An error occurred while processing your query.", context_updates={})
 
 def init(app: LLMRails):
-    """
-    Initialize the NeMo Guardrails application with the RAG action.
-    
-    Parameters:
-    - app: LLMRails - The NeMo Guardrails application instance.
-    """
     app.register_action(rag, "rag")
 
 async def initialize_rag(file_objs):
-    """
-    Asynchronously initialize the RAG system with the given documents.
-    
-    Parameters:
-    - file_objs: List of file objects to initialize the RAG system with.
-    
-    Returns:
-    - Tuple[LLMRails, QueryEngine]: The initialized guardrails and query engine.
-    """
     index = await load_documents(file_objs)  # Assuming document loading could be async
     query_engine = index.as_query_engine(similarity_top_k=20, streaming=True)
     rails = LLMRails(config_path="./Config")
