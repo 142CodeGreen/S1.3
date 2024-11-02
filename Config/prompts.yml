@@ -1,7 +1,7 @@
 prompts:
   - task: self_check_input
     content: |
-      Your task is to check if the user message below complies with the policy for talking with the AI Enterprise bot.
+      Your task is to check if the user message below complies with the policy for talking with the AI chatbot.
 
       Policy for the user messages:
       - should not contain harmful data
