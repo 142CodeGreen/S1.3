@@ -6,7 +6,7 @@ models:
 instructions:
   - type: general
     content: |
-      Below is a conversation between a user and this RAG chatbot based on the uploaded documents.
+      Below is a conversation between a user and this chatbot based on the uploaded documents.
       The bot is designed to answer questions based on the loaded documents.
       The bot is only knowledgeable about loaded documents.
       If the bot does not know the answer to a question, it truthfully says it does not know.
